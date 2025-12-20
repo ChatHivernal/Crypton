@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒Crypton - Chat Sécurisé</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 Crypton</h1>
+            <p>Messagerie instantanée chiffrée de bout en bout</p>
+        </header>
+
+        <div class="main-content">
+
+            <div class="sidebar">
+                <div class="user-info">
+                    <h3>Votre profil</h3>
+                    <div class="username-section">
+                        <span id="current-username">{{ username }}</span>
+                        <button onclick="showUsernameModal()">✏️</button>
+                    </div>
+                </div>
+
+                <div class="room-management">
+                    <h3>Salles de discussion</h3>
+                    <button onclick="showCreateRoomModal()" class="btn-primary">➕ Créer une salle</button>
+                    <button onclick="showJoinRoomModal()" class="btn-secondary">🔗 Rejoindre une salle</button>
+                    
+                    <div class="room-list">
+                        <h4>Salles disponibles</h4>
+                        <div id="rooms-list"></div>
+                    </div>
+                </div>
+
+                <div class="security-info">
+                    <h4>🔐 Sécurité</h4>
+                    <p>Messages chiffrés avec AES-256</p>
+                    <p>Clés générées aléatoirement</p>
+                </div>
+            </div>
+
+
+            <div class="chat-area">
+                <div class="chat-header">
+                    <h2 id="current-room">Bienvenue sur Crypton</h2>
+                    <div id="room-info" class="room-info"></div>
+                </div>
+
+                <div class="messages-container">
+                    <div id="messages" class="messages">
+                        <div class="welcome-message">
+                            <h3>Bienvenue sur Crypton !</h3>
+                            <p>Créez ou rejoignez une salle pour commencer à chatter de manière sécurisée.</p>
+                            <ul>
+                                <li>✅ Messages chiffrés AES-256</li>
+                                <li>✅ Communication confidentielle</li>
+
+                         <li>✅ Peu de cookies et de caches</li>       
+                         <li>✅ Salons publics, privés et annonces</li>
+                         <li>❌ Création de compte et récupération d'email</li>
+<li>❌ Publicité et monétisation</li>
+<li>❌ Revente de données</li>                            
+</ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-input-area" id="message-input-area" style="display: none;">
+                    <div class="input-group">
+                        <input type="text" id="message-input" placeholder="Tapez votre message sécurisé..." maxlength="500">
+                        <button onclick="sendMessage()" id="send-btn">Envoyer</button>
+                    </div>
+                    <div class="encryption-status">
+                        <span class="encrypted-badge">🔒 Chiffré</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="username-modal" class="modal">
+        <div class="modal-content">
+            <h3>Changer de nom d'utilisateur</h3>
+            <input type="text" id="new-username" placeholder="Nouveau nom" maxlength="20">
+            <div class="modal-actions">
+                <button onclick="updateUsername()" class="btn-primary">Valider</button>
+                <button onclick="hideUsernameModal()" class="btn-secondary">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="create-room-modal" class="modal">
+        <div class="modal-content">
+            <h3>Créer une nouvelle salle</h3>
+            <input type="text" id="room-name" placeholder="Nom de la salle" maxlength="30">
+            
+            <div class="room-type-selector">
+                <label class="room-type-btn">
+                    <input type="radio" name="room-type" id="room-type-public" value="public" checked onchange="updateRoomType()">
+                    <div>🌐 Public</div>
+                    <small>Accès libre</small>
+                </label>
+                <label class="room-type-btn">
+                    <input type="radio" name="room-type" id="room-type-private" value="private" onchange="updateRoomType()">
+                    <div>🔒 Privé</div>
+                    <small>Mot de passe requis</small>
+                </label>
+                <label class="room-type-btn">
+                    <input type="radio" name="room-type" id="room-type-announcement" value="announcement" onchange="updateRoomType()">
+                    <div>📢 Annonces</div>
+                    <small>Lecture libre, écriture restreinte</small>
+                </label>
+            </div>
+            
+            <div id="password-field" class="password-field" style="display: none;">
+                <input type="password" id="room-password" placeholder="Mot de passe requis" maxlength="50">
+                <small class="password-hint" id="password-hint">Le mot de passe doit contenir au moins 4 caractères</small>
+            </div>
+            
+            <div class="modal-actions">
+                <button onclick="createRoom()" class="btn-primary">Créer la salle</button>
+                <button onclick="hideCreateRoomModal()" class="btn-secondary">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="join-room-modal" class="modal">
+        <div class="modal-content">
+            <h3>Rejoindre une salle</h3>
+            <input type="text" id="room-id-input" placeholder="ID de la salle">
+            <div class="modal-actions">
+                <button onclick="joinRoom()" class="btn-primary">Rejoindre</button>
+                <button onclick="hideJoinRoomModal()" class="btn-secondary">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="private-room-modal" class="modal">
+        <div class="modal-content">
+            <h3>Salon Privé - Mot de passe requis</h3>
+            <p id="private-room-name" class="room-name-preview"></p>
+            <input type="password" id="room-password-input" placeholder="Mot de passe du salon">
+            <div class="modal-actions">
+                <button onclick="joinPrivateRoom()" class="btn-primary">Rejoindre</button>
+                <button onclick="hidePrivateRoomModal()" class="btn-secondary">Annuler</button>
+            </div>
+            <div id="password-error" class="error-message" style="display: none;">
+                Mot de passe incorrect
+            </div>
+        </div>
+    </div>
+
+
+    <div id="write-permission-modal" class="modal">
+        <div class="modal-content">
+            <h3>Permission d'écriture requise</h3>
+            <p id="write-room-name" class="room-name-preview"></p>
+            <p>Ce canal est en mode annonces. Tout le monde peut lire, mais un mot de passe est requis pour écrire.</p>
+            <input type="password" id="write-password-input" placeholder="Mot de passe d'écriture">
+            <div class="modal-actions">
+                <button onclick="checkWritePermission()" class="btn-primary">Vérifier</button>
+                <button onclick="hideWritePermissionModal()" class="btn-secondary">Annuler</button>
+            </div>
+            <div id="write-password-error" class="error-message" style="display: none;">
+                Mot de passe incorrect
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
